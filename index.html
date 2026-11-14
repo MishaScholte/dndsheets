@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ferdi Mŷnor – Character Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout: mobile-first one-screen app. Sticky status bar on top (HP, concentration), one view at a time, tab bar at the bottom within thumb reach. */
+:root {
+  --bg: #f4f6f4;
+  --surface: #ffffff;
+  --ink: #17221d;
+  --muted: #5b6b63;
+  --line: #d8e0dc;
+  --accent: #0f6b4f;
+  --accent-soft: #e2f0ea;
+  --pearl: #9a7440;
+  --good: #2f7d3a;
+  --warn: #a8661b;
+  --bad: #b23a3a;
+  --display: "Marcellus", "Iowan Old Style", Georgia, serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --tabh: 60px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1513; --surface: #17201c; --ink: #e6eee9; --muted: #96a89f;
+    --line: #2a3832; --accent: #4fc29a; --accent-soft: #1b3229; --pearl: #d4b483;
+    --good: #6cc77a; --warn: #e0a457; --bad: #e57373; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1513; --surface: #17201c; --ink: #e6eee9; --muted: #96a89f;
+  --line: #2a3832; --accent: #4fc29a; --accent-soft: #1b3229; --pearl: #d4b483;
+  --good: #6cc77a; --warn: #e0a457; --bad: #e57373; color-scheme: dark;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.5 var(--body); -webkit-text-size-adjust: 100%; }
+h1, h2, h3 { font-family: var(--display); font-weight: 400; text-wrap: balance; margin: 0; }
+h1 { font-size: 22px; line-height: 1.2; }
+h2 { font-size: 22px; margin: 4px 0 12px; }
+h3 { font-size: 18px; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* status bar */
+.status { position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line);
+  padding: calc(8px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left)); }
+.status .inner { max-width: 760px; margin: 0 auto; display: grid; gap: 4px; }
+.status .line1 { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.status .sub { font-size: 12px; color: var(--muted); }
+.status .line2 { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.pill { font: 500 13px var(--mono); padding: 3px 9px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); }
+.pill.hp { color: var(--good); border-color: var(--good); }
+.pill.hp.mid { color: var(--warn); border-color: var(--warn); }
+.pill.hp.low { color: var(--bad); border-color: var(--bad); }
+.pill.conc { color: var(--warn); border-color: var(--warn); font-family: var(--body); }
+
+main { max-width: 760px; margin: 0 auto;
+  padding: 14px max(16px, env(safe-area-inset-right)) calc(var(--tabh) + 24px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+.view { display: none; }
+.view.on { display: block; }
+.stack { display: grid; gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.card h3 { margin-bottom: 8px; }
+
+/* tab bar */
+nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--surface); border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: repeat(5, 1fr); padding-bottom: env(safe-area-inset-bottom); }
+nav.tabs a { height: var(--tabh); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  text-decoration: none; color: var(--muted); font-size: 12px; font-weight: 500; }
+nav.tabs a svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+nav.tabs a.on { color: var(--accent); }
+
+a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px; min-height: 58px; text-align: left; font: inherit; color: inherit; }
+.tile .k { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); line-height: 1.2; }
+.tile .v { font-family: var(--mono); font-size: 19px; }
+button.tile { cursor: pointer; border-color: var(--accent); }
+
+.row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.between { justify-content: space-between; }
+.hpbig { font-family: var(--mono); font-size: 34px; line-height: 1; }
+input[type=number] { width: 84px; height: 44px; font: 18px var(--mono); padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); }
+select { height: 44px; font: 16px var(--body); padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); flex: 1; min-width: 0; }
+button { font: 500 15px var(--body); border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: 10px; min-height: 44px; padding: 8px 14px; cursor: pointer; touch-action: manipulation; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+button.danger { color: var(--bad); border-color: var(--bad); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.grow { flex: 1; }
+.hpbar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 10px 0 12px; }
+.hpbar > i { display: block; height: 100%; background: var(--good); transition: width .2s; }
+.btn3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+
+.pips { display: flex; gap: 8px; flex-wrap: wrap; }
+.pip { width: 34px; height: 34px; min-height: 0; border-radius: 50%; border: 2px solid var(--accent); background: var(--accent); padding: 0; }
+.pip.used { background: transparent; border-color: var(--line); }
+.slotrow { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: 8px; padding: 5px 0; }
+.slotrow .lbl { font-size: 14px; color: var(--muted); }
+
+.chip { display: inline-flex; align-items: center; font-size: 12px; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); color: var(--muted); background: var(--bg); white-space: nowrap; }
+.chip.conc { color: var(--warn); border-color: var(--warn); }
+.chip.ba { color: var(--accent); border-color: var(--accent); }
+.chip.re { color: var(--pearl); border-color: var(--pearl); }
+button.chip { cursor: pointer; font-size: 14px; padding: 6px 12px; min-height: 36px; }
+button.chip.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.cond.on { background: color-mix(in srgb, var(--bad) 14%, var(--surface)); color: var(--bad); border-color: var(--bad); }
+.concbox { border-left: 4px solid var(--line); }
+.concbox.active { border-left-color: var(--warn); }
+
+.filters { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; scrollbar-width: none; }
+.filters::-webkit-scrollbar { display: none; }
+.lvlhead { font-family: var(--display); font-size: 17px; margin: 16px 0 8px; color: var(--accent); }
+details.spell { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 8px; }
+details.spell > summary { list-style: none; cursor: pointer; padding: 12px 14px; display: grid; gap: 4px; }
+details.spell > summary::-webkit-details-marker { display: none; }
+details.spell > summary .t { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+details.spell > summary .t span.arrow { color: var(--muted); transition: transform .15s; }
+details.spell[open] > summary .t span.arrow { transform: rotate(90deg); }
+details.spell > summary .q { font-size: 13px; color: var(--muted); }
+details.spell .body { padding: 0 14px 14px; }
+.meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 14px; margin: 4px 0 8px; }
+.meta b { font-weight: 500; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; display: block; }
+.body p { margin: 6px 0; }
+.tip { font-size: 15px; border-left: 3px solid var(--pearl); padding-left: 10px; }
+
+.feat p { margin: 4px 0 0; }
+dl.acts { margin: 0; }
+dl.acts dt { font-weight: 600; margin-top: 12px; }
+dl.acts dt:first-child { margin-top: 0; }
+dl.acts dd { margin: 2px 0 0; }
+
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+td, th { padding: 10px 6px; border-bottom: 1px solid var(--line); text-align: left; }
+th { font-weight: 500; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+td.r, th.r { text-align: right; font-family: var(--mono); }
+tr.roll { cursor: pointer; }
+tr.roll:active td { background: var(--accent-soft); }
+.prof { display: block; font-size: 11.5px; color: var(--muted); }
+ul.plain { margin: 6px 0; padding-left: 18px; }
+ul.plain li { margin: 4px 0; }
+blockquote { margin: 10px 0; padding-left: 12px; border-left: 3px solid var(--accent); font-style: italic; }
+
+#toast { position: fixed; left: 50%; bottom: calc(var(--tabh) + 14px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+  background: var(--ink); color: var(--bg); padding: 12px 16px; border-radius: 12px; font-size: 15px; box-shadow: 0 6px 20px rgba(0,0,0,.25);
+  opacity: 0; pointer-events: none; transition: opacity .2s; width: max-content; max-width: calc(100% - 32px); z-index: 20; }
+#toast.show { opacity: 1; }
+#toast .big { font-family: var(--mono); font-size: 24px; margin-left: 6px; }
+@media (min-width: 700px) {
+  .tiles { grid-template-columns: repeat(7, 1fr); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<header class="status">
+  <div class="inner">
+    <div class="line1"><h1 id="cname">Ferdi Mŷnor</h1><span class="sub" id="saveState">Saving…</span></div>
+    <div class="sub" id="csub"></div>
+    <div class="line2" id="statusPills"></div>
+  </div>
+</header>
+
+<main>
+  <!-- TRACKER -->
+  <section class="view" id="v-tracker">
+    <div class="stack">
+      <div class="tiles" id="tiles"></div>
+
+      <div class="card">
+        <div class="row between"><h3 style="margin:0">Hit Points</h3><span class="muted num small" id="hpMaxLbl"></span></div>
+        <div class="row" style="margin-top:6px"><span class="hpbig num" id="hpNow"></span><span class="muted num" id="hpTemp"></span></div>
+        <div class="hpbar"><i id="hpBar"></i></div>
+        <div class="row">
+          <label for="hpAmt" class="muted small">Amount</label>
+          <input type="number" id="hpAmt" min="0" value="5" inputmode="numeric" pattern="[0-9]*">
+        </div>
+        <div class="btn3">
+          <button id="btnDmg" class="danger">Damage</button>
+          <button id="btnHeal">Heal</button>
+          <button id="btnTemp">Temp HP</button>
+        </div>
+        <div class="slotrow" style="margin-top:10px"><span class="lbl">Death ✓</span><div class="pips" id="dsS"></div></div>
+        <div class="slotrow"><span class="lbl">Death ✗</span><div class="pips" id="dsF"></div></div>
+      </div>
+
+      <div class="card concbox" id="concBox">
+        <h3>Concentration</h3>
+        <p style="margin:0 0 8px" id="concNow"></p>
+        <div class="row">
+          <select id="concSel" aria-label="Active concentration spell"></select>
+          <button id="btnConcCheck">Roll save</button>
+        </div>
+        <p class="muted small" style="margin:8px 0 0">When you take damage: Con save, DC 10 or half the damage (whichever is higher, max 30). War Caster gives advantage.</p>
+      </div>
+
+      <div class="card">
+        <div class="row between"><h3 style="margin:0">Spell Slots</h3><span class="muted small">Tap to mark</span></div>
+        <div id="slots" style="margin-top:6px"></div>
+        <p class="muted small" style="margin:8px 0 0">2024 rule: you can expend only one spell slot per turn.</p>
+      </div>
+
+      <div class="card">
+        <h3>Resources</h3>
+        <div class="slotrow"><span class="lbl">Bardic Insp. <span class="num" id="biDie"></span></span><div class="pips" id="bi"></div></div>
+        <div class="slotrow"><span class="lbl">Sanctuary (free)</span><div class="pips" id="sanct"></div></div>
+        <div class="slotrow"><span class="lbl">Heroic Insp.</span><div class="pips" id="heroic"></div></div>
+        <button id="btnSlotToBi" style="margin-top:8px;width:100%">Spend slot → regain 1 Bardic Inspiration</button>
+      </div>
+
+      <div class="card">
+        <h3>Conditions</h3>
+        <div class="row" id="conds"></div>
+      </div>
+
+      <div class="card">
+        <h3>Rest</h3>
+        <p class="muted small" style="margin:0 0 8px">Short rest restores Bardic Inspiration (Font of Inspiration); roll Hit Dice yourself. Long rest restores everything.</p>
+        <div class="row">
+          <button id="btnShort" class="grow">Short Rest</button>
+          <button id="btnLong" class="primary grow">Long Rest</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPELLS -->
+  <section class="view" id="v-spells">
+    <h2>Spells</h2>
+    <p class="muted small" style="margin-top:-6px">Save DC <span id="dcInline"></span> · Spell attack <span id="atkInline"></span> · Tap a spell for details.</p>
+    <div class="filters" id="filters"></div>
+    <div id="spellList"></div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="view" id="v-features">
+    <h2>Features &amp; Feats</h2>
+    <div class="stack" id="featList"></div>
+  </section>
+
+  <!-- ACTIONS -->
+  <section class="view" id="v-actions">
+    <h2>Actions in Combat</h2>
+    <div class="card"><dl class="acts" id="actionList"></dl></div>
+    <p class="muted small">On your turn: move, one action, one bonus action (if you have one), and one reaction per round.</p>
+  </section>
+
+  <!-- SKILLS + GEAR -->
+  <section class="view" id="v-skills">
+    <h2>Skills &amp; Saves</h2>
+    <p class="muted small" style="margin-top:-6px">Tap a row to roll.</p>
+    <div class="two">
+      <div class="card"><table id="skillTable"></table></div>
+      <div class="stack">
+        <div class="card"><table id="saveTable"></table>
+          <p class="muted small" style="margin-bottom:0">Tools: <span id="tools"></span></p>
+        </div>
+        <div class="card"><h3>Equipment</h3><ul class="plain" id="gearList"></ul></div>
+        <div class="card"><h3>One-liners</h3><div id="lines"></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav class="tabs" aria-label="Sections">
+  <a href="#tracker" data-v="tracker"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg>Tracker</a>
+  <a href="#spells" data-v="spells"><svg viewBox="0 0 24 24"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z"/></svg>Spells</a>
+  <a href="#features" data-v="features"><svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h5"/></svg>Features</a>
+  <a href="#actions" data-v="actions"><svg viewBox="0 0 24 24"><path d="M4 20l7-7M13 11l7-7M15 4h5v5"/><path d="M4 15l5 5"/></svg>Actions</a>
+  <a href="#skills" data-v="skills"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.2"/><circle cx="15" cy="15" r="1.2"/><circle cx="15" cy="9" r="1.2"/><circle cx="9" cy="15" r="1.2"/></svg>Skills</a>
+</nav>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ===== CHARACTER DATA (replace this block for another character) ===== */
+const CHARACTER = {
+  id: "ferdi-mynor",
+  name: "Ferdi Mŷnor",
+  subtitle: "Human · Bard 9 (College of Lore) · Acolyte · D&D 2024",
+  level: 9, pb: 4,
+  abilities: { STR: 8, DEX: 14, CON: 14, INT: 9, WIS: 12, CHA: 20 },
+  hpMax: 66, ac: 14, speed: 30, initBonusExtra: 4, // Alert: + Proficiency Bonus
+  spellAbility: "CHA",
+  saveProfs: ["DEX", "CHA"],
+  jackOfAllTrades: true,
+  skills: { // 0 = none, 1 = proficient, 2 = expertise
+    "Acrobatics": ["DEX", 0], "Animal Handling": ["WIS", 0], "Arcana": ["INT", 1], "Athletics": ["STR", 0],
+    "Deception": ["CHA", 2], "History": ["INT", 0], "Insight": ["WIS", 2], "Intimidation": ["CHA", 0],
+    "Investigation": ["INT", 1], "Medicine": ["WIS", 0], "Nature": ["INT", 0], "Perception": ["WIS", 2],
+    "Performance": ["CHA", 1], "Persuasion": ["CHA", 2], "Religion": ["INT", 1], "Sleight of Hand": ["DEX", 0],
+    "Stealth": ["DEX", 1], "Survival": ["WIS", 0]
+  },
+  tools: "Calligrapher's Supplies, three musical instruments (incl. lute)",
+  slots: [4, 3, 3, 3, 1],
+  resources: { bi: 5, biDie: "d8", sanct: 1, heroic: 1 },
+  conditions: ["Blinded","Charmed","Deafened","Frightened","Grappled","Incapacitated","Invisible","Paralyzed","Poisoned","Prone","Restrained","Stunned","Exhaustion"],
+  spells: [
+    { n:"Vicious Mockery", l:0, t:"Action", r:"60 ft", c:"V", d:"Instantaneous", src:"Bard", save:"WIS",
+      desc:"You insult a creature that can hear you. On a failed Wisdom save it takes 2d6 psychic damage and has disadvantage on its next attack roll before the end of its next turn.",
+      tip:"Your default cantrip. Aim it at whoever is about to hit your front-liner." },
+    { n:"Prestidigitation", l:0, t:"Action", r:"10 ft", c:"V, S", d:"Up to 1 hour", src:"Bard",
+      desc:"Minor magical tricks: a harmless sensory effect, light or snuff a candle, clean or soil a small object, warm, chill or flavor something, a temporary mark on a surface, or a small illusory trinket in your hand. Up to three lasting effects at a time.",
+      tip:"Germophobia management. Also great for theatrics and distractions." },
+    { n:"Minor Illusion", l:0, t:"Action", r:"30 ft", c:"S, M", d:"1 minute", src:"Bard", save:"Study (INT)",
+      desc:"Create a sound or a still image of an object (up to a 5-foot cube). Physical contact reveals the image as an illusion. A creature can take the Study action and make an Intelligence (Investigation) check against your spell save DC to see through it.",
+      tip:"A crate to duck behind (cover for Hide), or footsteps leading the wrong way." },
+    { n:"Guidance", l:0, t:"Action", r:"Touch", c:"V, S", d:"Conc., up to 1 minute", conc:true, src:"Magic Initiate",
+      desc:"Choose a skill. A willing creature can add a d4 to ability checks it makes with that skill while the spell lasts.",
+      tip:"Before an ally's important check. Concentration, so mainly out of combat." },
+    { n:"Thaumaturgy", l:0, t:"Action", r:"30 ft", c:"V", d:"Up to 1 minute", src:"Magic Initiate",
+      desc:"A minor wonder: your voice booms three times as loud, flames flicker or change color, the ground trembles harmlessly, a sudden sound rings out, an unlocked door or window flies open or slams shut, or your eyes change. Up to three 1-minute effects at a time.",
+      tip:"Ferdi's grand entrance. Pairs well with Intimidation or Performance (ask your DM about advantage)." },
+    { n:"Healing Word", l:1, t:"Bonus Action", r:"60 ft", c:"V", d:"Instantaneous", src:"Bard", ba:true,
+      desc:"A creature you can see regains 2d4 + your spellcasting modifier (+5) hit points.", up:"+2d4 per slot level above 1st.",
+      tip:"Pick an ally back up from 0 HP." },
+    { n:"Dissonant Whispers", l:1, t:"Action", r:"60 ft", c:"V", d:"Instantaneous", src:"Bard", save:"WIS",
+      desc:"On a failed Wisdom save: 3d6 psychic damage, and the target must immediately use its reaction to move as far away from you as it can (avoiding obviously dangerous ground). On a success: half damage and no movement.", up:"+1d6 per slot level above 1st.",
+      tip:"The forced movement can provoke opportunity attacks from your party." },
+    { n:"Command", l:1, t:"Action", r:"60 ft", c:"V", d:"Instantaneous", src:"Bard", save:"WIS",
+      desc:"On a failed Wisdom save, the target follows a one-word command on its next turn: Approach, Drop, Flee, Grovel, or Halt.", up:"+1 target per slot level above 1st.",
+      tip:"“Grovel!” knocks a foe prone. “Drop!” makes it let go of a weapon or a stolen item." },
+    { n:"Detect Magic", l:1, t:"Action", r:"Self (30 ft)", c:"V, S", d:"Conc., up to 10 minutes", conc:true, ritual:true, src:"Bard",
+      desc:"You sense magic within 30 feet. With the Magic action you see an aura around visible magical creatures or objects and learn a spell's school. Blocked by 1 foot of stone, dirt or wood, 1 inch of metal, or a thin sheet of lead.",
+      tip:"Cast it as a ritual (+10 minutes) to spend no slot." },
+    { n:"Sanctuary", l:1, t:"Bonus Action", r:"30 ft", c:"V, S, M", d:"1 minute", src:"Magic Initiate", ba:true, free:true, save:"WIS (attacker)",
+      desc:"You ward a creature. Anyone targeting it with an attack roll or a damaging spell must first succeed on a Wisdom save, or choose a new target or lose the attack or spell. Doesn't protect against area effects. Ends if the warded creature makes an attack roll, casts a spell, or deals damage.",
+      tip:"Free once per long rest. Ferdi can't cast spells while warded without ending it, so use it to escape or to protect a friend." },
+    { n:"Hold Person", l:2, t:"Action", r:"60 ft", c:"V, S, M", d:"Conc., up to 1 minute", conc:true, src:"Bard", save:"WIS",
+      desc:"A Humanoid that fails a Wisdom save is Paralyzed. It repeats the save at the end of each of its turns.", up:"+1 Humanoid per slot level above 2nd (4 targets with a 5th-level slot).",
+      tip:"Paralyzed: attacks against it have advantage, and hits from within 5 ft are critical hits. Call in your melee fighter." },
+    { n:"Suggestion", l:2, t:"Action", r:"30 ft", c:"V, M", d:"Conc., up to 8 hours", conc:true, src:"Bard", save:"WIS",
+      desc:"A creature that can hear and understand you is Charmed on a failed Wisdom save and pursues a reasonable-sounding course of action you describe (25 words max). Ends if you or your allies damage it.",
+      tip:"Skip a fight: “Take us to your master, he'll surely want to meet me.”" },
+    { n:"Heat Metal", l:2, t:"Action", r:"60 ft", c:"V, S, M", d:"Conc., up to 1 minute", conc:true, src:"Bard", save:"CON",
+      desc:"A manufactured metal object (weapon or armor) you can see glows red-hot. A creature in contact takes 2d8 fire damage, no save. On later turns you can repeat the damage as a Bonus Action. A creature holding or wearing it that takes the damage makes a Con save: on a failure it drops the object; if it can't, it has disadvantage on attack rolls and ability checks until the start of your next turn.", up:"+1d8 per slot level above 2nd.",
+      tip:"Only useful against foes with metal gear. Costs your bonus action every turn." },
+    { n:"Hypnotic Pattern", l:3, t:"Action", r:"120 ft", c:"S, M", d:"Conc., up to 1 minute", conc:true, src:"Bard", save:"WIS",
+      desc:"A 30-foot cube. Each creature that sees the pattern makes a Wisdom save. On a failure it is Charmed, Incapacitated, and has speed 0. This ends if it takes damage or someone uses an action to shake it awake.",
+      tip:"Your best spell against groups. Tell your party NOT to hit the charmed foes, and deal with them one at a time." },
+    { n:"Dispel Magic", l:3, t:"Action", r:"120 ft", c:"V, S", d:"Instantaneous", src:"Bard",
+      desc:"Spells of 3rd level or lower on a creature, object or magical effect end. For higher-level spells, make an ability check with your spellcasting ability (DC 10 + the spell's level).", up:"Spells up to the slot's level end automatically.",
+      tip:"That check is a plain Charisma check, so Jack of All Trades (+2) likely applies. Confirm with your DM." },
+    { n:"Mass Healing Word", l:3, t:"Bonus Action", r:"60 ft", c:"V", d:"Instantaneous", src:"Bard", ba:true,
+      desc:"Up to six creatures you can see each regain 2d4 + your spellcasting modifier (+5) hit points.",
+      tip:"Panic button when several allies drop. No concentration." },
+    { n:"Counterspell", l:3, t:"Reaction", r:"60 ft", c:"S", d:"Instantaneous", src:"Magical Discoveries", re:true, save:"CON (caster)",
+      desc:"When you see a creature casting a spell with Verbal, Somatic or Material components, it makes a Constitution save. On a failure the spell fails, and the action (or other action type) used to cast it is wasted. A spell slot used for it isn't expended.",
+      tip:"Competes with Cutting Words for your reaction. Save it for dangerous spells." },
+    { n:"Haste", l:3, t:"Action", r:"30 ft", c:"V, S, M", d:"Conc., up to 1 minute", conc:true, src:"Magical Discoveries",
+      desc:"A willing creature gets doubled speed, +2 AC, advantage on Dex saves, and an extra action each turn (only Attack with one attack, Dash, Disengage, Hide, or Utilize). When the spell ends, the target is Incapacitated with speed 0 until the end of its next turn.",
+      tip:"On your strongest fighter. If you lose concentration, they lose a turn, so stay in the back." },
+    { n:"Polymorph", l:4, t:"Action", r:"60 ft", c:"V, S, M", d:"Conc., up to 1 hour", conc:true, src:"Bard", save:"WIS",
+      desc:"Turns a creature into a Beast whose CR is no higher than the target's CR (or level). The target gains temporary HP equal to that Beast's HP, and the spell ends when those temporary HP are gone. It can't speak or cast spells. No effect on shape-shifters or creatures with 0 HP.",
+      tip:"Enemy → small critter: tell your party NOT to hit it. Ally → big beast: an extra HP buffer." },
+    { n:"Dimension Door", l:4, t:"Action", r:"500 ft", c:"V", d:"Instantaneous", src:"Bard",
+      desc:"You teleport to a spot you can see or describe (distance and direction). You can bring one willing creature within 5 ft of you. If the spot is occupied, you each take 4d6 force damage and the teleport fails.",
+      tip:"Escape a grapple, a cell, or being surrounded. No concentration." },
+    { n:"Greater Invisibility", l:4, t:"Action", r:"Touch", c:"V, S", d:"Conc., up to 1 minute", conc:true, src:"Bard",
+      desc:"A creature gains the Invisible condition, which doesn't end when it attacks or casts a spell.",
+      tip:"On your fighter: advantage on their attacks, disadvantage on attacks against them. Or on yourself to escape." },
+    { n:"Synaptic Static", l:5, t:"Action", r:"120 ft", c:"V, S", d:"Instantaneous", src:"Bard", save:"INT",
+      desc:"A 20-foot-radius sphere. On a failed Intelligence save, 8d6 psychic damage; half on a success. Creatures that fail subtract 1d6 from attack rolls, ability checks and concentration saves for 1 minute, repeating the Int save at the end of each of their turns to end it.",
+      tip:"No concentration, so stack it with Haste or Hypnotic Pattern. Great against low-Int brutes." }
+  ],
+  features: [
+    { n:"Bardic Inspiration", src:"Bard 1", tag:"Bonus Action",
+      d:"A creature within 60 ft that can see or hear you gains a d8. Once within the next hour, after it fails a D20 Test, it can roll the d8 and add it, potentially turning the failure into a success. 5 uses (Cha modifier)." },
+    { n:"Cutting Words", src:"College of Lore 3", tag:"Reaction",
+      d:"When a creature you can see within 60 ft makes a damage roll or succeeds on an ability check or attack roll, expend one Bardic Inspiration, roll the d8, and subtract the number. Can turn a hit into a miss." },
+    { n:"Font of Inspiration", src:"Bard 5",
+      d:"Bardic Inspiration returns on a short or long rest. You can also expend a spell slot (no action required) to regain one use." },
+    { n:"Countercharm", src:"Bard 7", tag:"Reaction",
+      d:"When you or a creature within 30 ft fails a save against an effect that applies or removes Charmed or Frightened, that save is rerolled with advantage." },
+    { n:"Jack of All Trades", src:"Bard 2",
+      d:"+2 (half your Proficiency Bonus) to any ability check you aren't proficient in. Already included in the Skills table." },
+    { n:"Expertise", src:"Bard 2 & 9",
+      d:"Double Proficiency Bonus (+8) on Deception, Persuasion, Perception, and Insight." },
+    { n:"Magical Discoveries", src:"College of Lore 6",
+      d:"Counterspell and Haste (Wizard list) are always prepared and don't count against your 14 prepared spells." },
+    { n:"Spellcasting", src:"Bard 1",
+      d:"Spell save DC 17, spell attack +9. Spellcasting focus: a musical instrument. You can cast prepared Ritual spells as rituals (+10 minutes, no slot)." },
+    { n:"Alert", src:"Origin feat (Human)",
+      d:"Add your Proficiency Bonus (+4) to Initiative. After rolling Initiative, you can swap your result with a willing ally." },
+    { n:"Magic Initiate (Cleric)", src:"Origin feat (Acolyte)",
+      d:"Guidance, Thaumaturgy, and Sanctuary, using Charisma. You can cast Sanctuary once per long rest without a slot, and also with your spell slots." },
+    { n:"War Caster", src:"Feat, level 8",
+      d:"Advantage on Constitution saves to maintain concentration. When a creature provokes an opportunity attack from you, you can instead use your reaction to cast a spell (casting time: an action) at it. You can perform Somatic components with a weapon or shield in hand." },
+    { n:"Resourceful", src:"Human",
+      d:"You gain Heroic Inspiration whenever you finish a long rest: reroll any die immediately and use the new roll." }
+  ],
+  actions: [
+    ["Attack", "A weapon attack or unarmed strike. Ferdi: dagger, +6 to hit, 1d4+2 piercing."],
+    ["Magic", "Cast a spell with a casting time of an action, or use a magic item or magical feature."],
+    ["Dash", "Gain extra movement equal to your speed (30 ft)."],
+    ["Disengage", "Your movement doesn't provoke opportunity attacks this turn."],
+    ["Dodge", "Until your next turn: attacks against you have disadvantage and you have advantage on Dex saves. Lost if you're Incapacitated or your speed is 0."],
+    ["Help", "Give an ally advantage on their next ability check (with a skill or tool you're proficient in), or distract a foe within 5 ft so an ally's next attack against it has advantage."],
+    ["Hide", "Dex (Stealth) check, DC 15, while out of sight (heavily obscured, or behind three-quarters or total cover). On success you're Invisible until you're found, attack, or make noise."],
+    ["Influence", "A Cha or Wis check to change a creature's attitude (Deception, Intimidation, Performance, Persuasion, Animal Handling)."],
+    ["Search / Study", "Search: Wis check (Perception, Insight, Medicine, Survival). Study: Int check (Arcana, History, Investigation, Nature, Religion)."],
+    ["Ready", "Choose a trigger and an action, and take it with your reaction. Readying a spell requires concentration and spends the slot right away."],
+    ["Utilize", "Use a nonmagical object (open a door, pull a lever)."],
+    ["Opportunity Attack", "Reaction when a foe leaves your reach. With War Caster you can cast Vicious Mockery or another spell at it instead."]
+  ],
+  gear: [
+    "Studded leather (AC 12 + Dex = 14)",
+    "Lute with mother-of-pearl inlay (spellcasting focus)",
+    "2 daggers (finesse, light, thrown 20/60)",
+    "Component pouch (backup for Sanctuary)",
+    "Holy symbol (cover as a choir singer)",
+    "2× Potion of Healing (2d4+2)",
+    "Fine clothes: white silk ruffled shirt, emerald velvet coat, white silk gloves",
+    "Crystal flask of perfume, soap",
+    "Rope, lamp, chalk"
+  ],
+  lines: [
+    "Fergis, hit him! He's breathing my oxygen and it smells like poverty!",
+    "Darling, your swordplay is almost as tragic as your personal hygiene.",
+    "I refuse to be stabbed by someone who clearly buys his weapons on clearance.",
+    "For a complete nobody, you show surprising potential for my backing choir.",
+    "You're officially my favorite meat-eater of the day. Trust me, that's a very exclusive club."
+  ]
+};
+
+/* ===== ENGINE ===== */
+const C = CHARACTER;
+const mod = s => Math.floor((s - 10) / 2);
+const sgn = n => (n >= 0 ? "+" : "") + n;
+const M = Object.fromEntries(Object.entries(C.abilities).map(([k, v]) => [k, mod(v)]));
+const DC = 8 + C.pb + M[C.spellAbility];
+const ATK = C.pb + M[C.spellAbility];
+const STORE_KEY = "dnd-sheet-" + C.id;
+const $ = id => document.getElementById(id);
+
+function defaults() {
+  return { hp: C.hpMax, temp: 0, slotsUsed: C.slots.map(() => 0), bi: 0, sanct: 0, heroic: 0, conc: "", conds: [], dsS: 0, dsF: 0 };
+}
+let state = defaults();
+let updated = 0;
+
+/* --- storage: this browser + (when available) your claude.ai account --- */
+let dbRef = null, saveTimer = null, writing = false, pendingWrite = false;
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) { const o = JSON.parse(raw); if (o && o.state) { state = Object.assign(defaults(), o.state); updated = o.updated || 0; } }
+  } catch (e) {}
+}
+function setSaveState(t) { $("saveState").textContent = t; }
+function save() {
+  updated = Date.now();
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({ state, updated })); if (!dbRef) setSaveState("Saved on device"); }
+  catch (e) { if (!dbRef) setSaveState("Not saved: keep page open"); }
+  if (dbRef) { setSaveState("Saving…"); clearTimeout(saveTimer); saveTimer = setTimeout(pushRemote, 700); }
+}
+async function pushRemote() {
+  if (!dbRef) return;
+  if (writing) { pendingWrite = true; return; }
+  writing = true;
+  try { await dbRef.set({ state: JSON.stringify(state), updated }); setSaveState("Synced"); }
+  catch (e) { setSaveState("Saved on device"); }
+  writing = false;
+  if (pendingWrite) { pendingWrite = false; pushRemote(); }
+}
+async function initRemote() {
+  try {
+    if (!window.claude || typeof window.claude.use !== "function") { setSaveState("Saved on device"); return; }
+    const timeout = new Promise(res => setTimeout(() => res(null), 10000));
+    const db = await Promise.race([window.claude.use("db"), timeout]);
+    const user = db ? await Promise.race([window.claude.use("user"), timeout]) : null;
+    if (!db || !user) { setSaveState("Saved on device"); return; }
+    const uid = await user.id();
+    if (!uid) { setSaveState("Saved on device"); return; }
+    const ref = db.collection("data/users/" + uid).doc(C.id);
+    const snap = await ref.get();
+    const data = snap ? (typeof snap.data === "function" ? snap.data() : snap) : null;
+    if (data && data.state && (data.updated || 0) > updated) {
+      state = Object.assign(defaults(), JSON.parse(data.state)); updated = data.updated;
+      try { localStorage.setItem(STORE_KEY, JSON.stringify({ state, updated })); } catch (e) {}
+      render();
+    }
+    dbRef = ref;
+    if (!data || (data.updated || 0) < updated) pushRemote(); else setSaveState("Synced");
+  } catch (e) { setSaveState("Saved on device"); }
+}
+
+/* --- dice --- */
+let toastTimer;
+function toast(html) { const t = $("toast"); t.innerHTML = html; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 3200); }
+const d = n => 1 + Math.floor(Math.random() * n);
+function rollD20(label, bonus, adv) {
+  const a = d(20), b = d(20); const pick = adv ? Math.max(a, b) : a;
+  const extra = adv ? ` <span style="opacity:.7">(${a}, ${b})</span>` : "";
+  const crit = pick === 20 ? " · nat 20!" : pick === 1 ? " · nat 1" : "";
+  toast(`${label}: ${pick}${extra} ${sgn(bonus)} =<span class="big">${pick + bonus}</span>${crit}`);
+}
+
+/* --- views (hash routing) --- */
+const VIEWS = ["tracker", "spells", "features", "actions", "skills"];
+function showView() {
+  const h = location.hash.slice(1);
+  const v = VIEWS.includes(h) ? h : "tracker";
+  VIEWS.forEach(x => $("v-" + x).classList.toggle("on", x === v));
+  document.querySelectorAll("nav.tabs a").forEach(a => { const on = a.dataset.v === v; a.classList.toggle("on", on); a.setAttribute("aria-current", on ? "page" : "false"); });
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", showView);
+
+/* --- render --- */
+function pips(el, total, used, onToggle) {
+  el.innerHTML = "";
+  for (let i = 0; i < total; i++) {
+    const b = document.createElement("button");
+    const isUsed = i >= total - used;
+    b.className = "pip" + (isUsed ? " used" : "");
+    b.setAttribute("aria-label", (isUsed ? "Used " : "Available ") + (i + 1));
+    b.onclick = () => onToggle(isUsed);
+    el.appendChild(b);
+  }
+}
+function skillBonus(name) {
+  const [ab, p] = C.skills[name];
+  return M[ab] + (p === 2 ? 2 * C.pb : p === 1 ? C.pb : (C.jackOfAllTrades ? Math.floor(C.pb / 2) : 0));
+}
+function render() {
+  // status bar
+  const pct = Math.max(0, Math.min(100, state.hp / C.hpMax * 100));
+  const hpClass = pct > 50 ? "" : pct > 25 ? " mid" : " low";
+  const slotsLeft = C.slots.map((n, i) => n - state.slotsUsed[i]).join("/");
+  $("statusPills").innerHTML =
+    `<span class="pill hp${hpClass}">HP ${state.hp}${state.temp ? "+" + state.temp : ""}/${C.hpMax}</span>` +
+    `<span class="pill">Slots ${slotsLeft}</span>` +
+    `<span class="pill">BI ${C.resources.bi - state.bi}</span>` +
+    (state.conc ? `<span class="pill conc">◉ ${state.conc}</span>` : "");
+  // tiles
+  const init = M.DEX + (C.initBonusExtra || 0);
+  const pp = 10 + skillBonus("Perception");
+  const tiles = [["AC", C.ac], ["Init", sgn(init), () => rollD20("Initiative", init)], ["Speed", C.speed], ["Save DC", DC],
+    ["Spell atk", sgn(ATK), () => rollD20("Spell attack", ATK)], ["Prof", sgn(C.pb)], ["Passive Perc", pp]];
+  $("tiles").innerHTML = "";
+  tiles.forEach(([k, v, fn]) => {
+    const el = document.createElement(fn ? "button" : "div");
+    el.className = "tile"; el.innerHTML = `<div class="k">${k}${fn ? " 🎲" : ""}</div><div class="v num">${v}</div>`;
+    if (fn) el.onclick = fn;
+    $("tiles").appendChild(el);
+  });
+  // HP
+  $("hpNow").textContent = state.hp; $("hpMaxLbl").textContent = "max " + C.hpMax;
+  $("hpTemp").textContent = state.temp ? `+${state.temp} temp` : "";
+  $("hpBar").style.width = pct + "%";
+  $("hpBar").style.background = pct > 50 ? "var(--good)" : pct > 25 ? "var(--warn)" : "var(--bad)";
+  pips($("dsS"), 3, state.dsS, used => { state.dsS = Math.max(0, Math.min(3, state.dsS + (used ? -1 : 1))); save(); render(); });
+  pips($("dsF"), 3, state.dsF, used => { state.dsF = Math.max(0, Math.min(3, state.dsF + (used ? -1 : 1))); save(); render(); });
+  // slots
+  const sl = $("slots"); sl.innerHTML = "";
+  C.slots.forEach((n, i) => {
+    const row = document.createElement("div"); row.className = "slotrow";
+    row.innerHTML = `<span class="lbl">Level ${i + 1}</span><div class="pips"></div>`;
+    pips(row.querySelector(".pips"), n, state.slotsUsed[i], used => {
+      state.slotsUsed[i] = Math.max(0, Math.min(n, state.slotsUsed[i] + (used ? -1 : 1))); save(); render(); });
+    sl.appendChild(row);
+  });
+  // resources
+  $("biDie").textContent = C.resources.biDie;
+  pips($("bi"), C.resources.bi, state.bi, used => { state.bi = Math.max(0, Math.min(C.resources.bi, state.bi + (used ? -1 : 1))); save(); render(); });
+  pips($("sanct"), C.resources.sanct, state.sanct, used => { state.sanct = used ? 0 : 1; save(); render(); });
+  pips($("heroic"), C.resources.heroic, state.heroic, used => { state.heroic = used ? 0 : 1; save(); render(); });
+  $("btnSlotToBi").disabled = state.bi === 0 || !state.slotsUsed.some((u, i) => u < C.slots[i]);
+  // concentration
+  $("concSel").innerHTML = `<option value="">None</option>` + C.spells.filter(s => s.conc).map(s => `<option${s.n === state.conc ? " selected" : ""}>${s.n}</option>`).join("");
+  $("concNow").innerHTML = state.conc ? `Active: <b>${state.conc}</b>` : `<span class="muted">No concentration spell active.</span>`;
+  $("concBox").classList.toggle("active", !!state.conc);
+  // conditions
+  $("conds").innerHTML = "";
+  C.conditions.forEach(c => {
+    const b = document.createElement("button");
+    const on = state.conds.includes(c);
+    b.className = "chip cond" + (on ? " on" : ""); b.textContent = c; b.setAttribute("aria-pressed", on);
+    b.onclick = () => { state.conds = on ? state.conds.filter(x => x !== c) : [...state.conds, c]; save(); render(); };
+    $("conds").appendChild(b);
+  });
+  renderSpells();
+}
+
+let filter = "all";
+const FILTERS = [["all", "All"], ["noconc", "No concentration"], ["conc", "Concentration"], ["ba", "Bonus action"], ["re", "Reaction"], ["ritual", "Ritual"]];
+function renderFilters() {
+  $("filters").innerHTML = "";
+  FILTERS.forEach(([k, label]) => {
+    const b = document.createElement("button"); b.className = "chip" + (filter === k ? " on" : ""); b.textContent = label;
+    b.setAttribute("aria-pressed", filter === k);
+    b.onclick = () => { filter = k; renderFilters(); renderSpells(); };
+    $("filters").appendChild(b);
+  });
+}
+function availableSlot(minLvl) {
+  for (let i = minLvl - 1; i < C.slots.length; i++) if (state.slotsUsed[i] < C.slots[i]) return i;
+  return -1;
+}
+function cast(s, mode) {
+  let msg;
+  if (mode === "free") { state.sanct = 1; msg = `${s.n} cast for free (Magic Initiate)`; }
+  else if (s.l > 0) {
+    const i = availableSlot(s.l);
+    if (i < 0) { toast(`No slot of level ${s.l} or higher left`); return; }
+    state.slotsUsed[i]++;
+    msg = `${s.n} cast with a level ${i + 1} slot` + (i + 1 > s.l && s.up ? ` · upcast: ${s.up}` : "");
+  } else msg = `${s.n} cast`;
+  if (s.conc) {
+    if (state.conc && state.conc !== s.n) msg += ` · ${state.conc} ended`;
+    state.conc = s.n;
+  }
+  toast(msg); save(); render();
+}
+const openSpells = new Set();
+function renderSpells() {
+  const list = $("spellList"); list.innerHTML = "";
+  const shown = C.spells.filter(s => filter === "all" || (filter === "noconc" && !s.conc) || (filter === "conc" && s.conc)
+    || (filter === "ba" && s.ba) || (filter === "re" && s.re) || (filter === "ritual" && s.ritual)).sort((a, b) => a.l - b.l);
+  let lastL = -1;
+  shown.forEach(s => {
+    if (s.l !== lastL) {
+      lastL = s.l;
+      const h = document.createElement("div"); h.className = "lvlhead";
+      const left = s.l === 0 ? "" : ` <span class="muted small" style="font-family:var(--body)">${C.slots[s.l - 1] - state.slotsUsed[s.l - 1]}/${C.slots[s.l - 1]} slots left</span>`;
+      h.innerHTML = (s.l === 0 ? "Cantrips" : `Level ${s.l}`) + left;
+      list.appendChild(h);
+    }
+    const el = document.createElement("details"); el.className = "spell";
+    if (openSpells.has(s.n)) el.open = true;
+    el.ontoggle = () => { el.open ? openSpells.add(s.n) : openSpells.delete(s.n); };
+    const chips = [s.conc ? `<span class="chip conc">Conc.</span>` : "", s.ba ? `<span class="chip ba">Bonus</span>` : "",
+      s.re ? `<span class="chip re">Reaction</span>` : "", s.ritual ? `<span class="chip">Ritual</span>` : ""].join(" ");
+    const slotOk = s.l === 0 || availableSlot(s.l) >= 0;
+    el.innerHTML = `
+      <summary>
+        <div class="t"><h3>${s.n}</h3><span class="arrow">›</span></div>
+        <div class="row" style="gap:6px">${chips}<span class="q">${s.t} · ${s.r}${s.save ? " · " + s.save : ""}</span></div>
+      </summary>
+      <div class="body">
+        <div class="meta">
+          <div><b>Casting time</b>${s.t}</div><div><b>Range</b>${s.r}</div>
+          <div><b>Duration</b>${s.d}</div><div><b>Components</b>${s.c}</div>
+          ${s.save ? `<div><b>Save</b>${s.save} · DC ${DC}</div>` : ""}<div><b>Source</b>${s.src}</div>
+        </div>
+        <p>${s.desc}</p>
+        ${s.up ? `<p class="muted small"><b style="font-weight:600">At higher levels:</b> ${s.up}</p>` : ""}
+        ${s.tip ? `<p class="tip">${s.tip}</p>` : ""}
+        <div class="row btns" style="margin-top:10px"></div>
+      </div>`;
+    const btnRow = el.querySelector(".btns");
+    const b = document.createElement("button"); b.className = "primary grow";
+    b.textContent = s.l === 0 ? "Cast" : "Cast (lowest free slot)";
+    b.disabled = !slotOk; b.onclick = () => cast(s);
+    btnRow.appendChild(b);
+    if (s.free) {
+      const f = document.createElement("button"); f.className = "grow"; f.textContent = "Cast free (1×/long rest)";
+      f.disabled = state.sanct >= 1; f.onclick = () => cast(s, "free"); btnRow.appendChild(f);
+    }
+    list.appendChild(el);
+  });
+}
+function renderStatic() {
+  $("cname").textContent = C.name; $("csub").textContent = C.subtitle;
+  $("dcInline").textContent = DC; $("atkInline").textContent = sgn(ATK);
+  $("featList").innerHTML = C.features.map(f => `<div class="card feat"><div class="row between" style="align-items:baseline"><h3 style="margin:0">${f.n}</h3>
+    <div class="row" style="gap:6px">${f.tag ? `<span class="chip ${f.tag === "Reaction" ? "re" : "ba"}">${f.tag}</span>` : ""}<span class="chip">${f.src}</span></div></div><p>${f.d}</p></div>`).join("");
+  $("actionList").innerHTML = C.actions.map(([a, t]) => `<dt>${a}</dt><dd>${t}</dd>`).join("");
+  const st = $("skillTable");
+  st.innerHTML = `<tr><th>Skill</th><th class="r">Bonus</th></tr>`;
+  Object.keys(C.skills).forEach(name => {
+    const [ab, p] = C.skills[name]; const bonus = skillBonus(name);
+    const tr = document.createElement("tr"); tr.className = "roll"; tr.tabIndex = 0;
+    tr.innerHTML = `<td>${name}<span class="prof">${ab}${p === 2 ? " · expertise" : p === 1 ? " · proficient" : ""}</span></td><td class="r">${sgn(bonus)}</td>`;
+    tr.onclick = () => rollD20(name, bonus);
+    tr.onkeydown = e => { if (e.key === "Enter") rollD20(name, bonus); };
+    st.appendChild(tr);
+  });
+  const sv = $("saveTable");
+  sv.innerHTML = `<tr><th>Saving throw</th><th class="r">Bonus</th></tr>`;
+  Object.keys(C.abilities).forEach(ab => {
+    const prof = C.saveProfs.includes(ab); const bonus = M[ab] + (prof ? C.pb : 0);
+    const tr = document.createElement("tr"); tr.className = "roll"; tr.tabIndex = 0;
+    tr.innerHTML = `<td>${ab}<span class="prof">Score ${C.abilities[ab]}${prof ? " · proficient" : ""}</span></td><td class="r">${sgn(bonus)}</td>`;
+    tr.onclick = () => rollD20(ab + " save", bonus);
+    tr.onkeydown = e => { if (e.key === "Enter") rollD20(ab + " save", bonus); };
+    sv.appendChild(tr);
+  });
+  $("tools").textContent = C.tools;
+  $("gearList").innerHTML = C.gear.map(g => `<li>${g}</li>`).join("");
+  $("lines").innerHTML = C.lines.map(l => `<blockquote>${l}</blockquote>`).join("");
+}
+
+/* --- controls --- */
+const amt = () => Math.max(0, parseInt($("hpAmt").value, 10) || 0);
+$("btnDmg").onclick = () => {
+  const total = amt(); let n = total; const a = Math.min(state.temp, n); state.temp -= a; n -= a;
+  state.hp = Math.max(0, state.hp - n); save(); render();
+  if (state.conc && total > 0) { const dc = Math.min(30, Math.max(10, Math.floor(total / 2))); toast(`Concentration: Con save DC ${dc} (advantage, War Caster)`); }
+};
+$("btnHeal").onclick = () => { if (state.hp === 0) { state.dsS = 0; state.dsF = 0; } state.hp = Math.min(C.hpMax, state.hp + amt()); save(); render(); };
+$("btnTemp").onclick = () => { state.temp = Math.max(state.temp, amt()); save(); render(); };
+$("concSel").onchange = e => { state.conc = e.target.value; save(); render(); };
+$("btnConcCheck").onclick = () => rollD20("Concentration (Con save)", M.CON, true);
+$("btnSlotToBi").onclick = () => {
+  const i = state.slotsUsed.findIndex((u, k) => u < C.slots[k]);
+  if (i < 0 || state.bi === 0) return;
+  state.slotsUsed[i]++; state.bi--; toast(`Level ${i + 1} slot spent → 1 Bardic Inspiration`); save(); render();
+};
+$("btnShort").onclick = () => { state.bi = 0; save(); render(); toast("Short rest: Bardic Inspiration restored"); };
+$("btnLong").onclick = () => {
+  const keep = state.conds.filter(c => c === "Exhaustion");
+  state = Object.assign(defaults(), { conds: keep }); save(); render();
+  toast("Long rest: HP, slots and resources restored" + (keep.length ? " (reduce Exhaustion by 1 yourself)" : ""));
+};
+
+loadLocal();
+renderStatic(); renderFilters(); render(); showView();
+setSaveState("Saved on device");
+initRemote();
+</script>
+</body>
+</html>
